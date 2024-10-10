@@ -1,5 +1,11 @@
 import pandas as pd
-url = "https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data"
+
+fn = "Combined_Right_Files_Columns.xlsx"
+
+df = pd.read_excel(fn)
+df.
+
+
 df = pd.read_csv(url, names=['sepal length','sepal width','petal length','petal width','target'])
 df.head()
 
