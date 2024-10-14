@@ -127,7 +127,7 @@ df_l.dropna().shape
 # Normalization
 
 columns_to_exclude = ['Age', 'AGEGROUP', 'GENDER']
-columns_to_normalize = df.columns.difference(columns_to_exclude)
+columns_to_normalize = df_r.columns.difference(columns_to_exclude)
 
 scaler =  StandardScaler()
 df_r[columns_to_normalize] = scaler.fit_transform(df_r[columns_to_normalize])
@@ -170,4 +170,81 @@ printcipalComponents = pca.fit_transform(x)
 principalDf = pd.DataFrame(data=printcipalComponents, columns = ['principal component1', 'principal component2', '3'])
 
 pca.explained_variance_ratio_
+
+# visualizaation
+
+
+# Random Forest
+
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+import pandas as pd
+
+# Agegroup을 목표 변수, 나머지를 설명 변수로 설정
+X = df.drop(columns=["Agegroup"])  # 설명 변수
+y = df["Agegroup"]  # 목표 변수
+
+# 학습 데이터와 테스트 데이터 분리
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# 랜덤 포레스트 모델 학습
+rf = RandomForestClassifier()
+rf.fit(X_train, y_train)
+
+# 변수 중요도 출력
+feature_importances = pd.Series(rf.feature_importances_, index=X.columns).sort_values(ascending=False)
+print(feature_importances)
+
+
+
+
+from sklearn.ensemble import RandomForestClassifier
+import pandas as pd
+
+# UMAP 결과로 나온 그룹 라벨을 포함한 데이터프레임이 있다고 가정
+X = df.drop(columns=["group"])  # 설명 변수
+y = df["group"]  # UMAP으로 구분된 그룹
+
+# 랜덤 포레스트 모델 학습
+rf = RandomForestClassifier()
+rf.fit(X, y)
+
+# 변수 중요도 출력
+feature_importances = pd.Series(rf.feature_importances_, index=X.columns).sort_values(ascending=False)
+print(feature_importances)
+
+
+import shap
+
+# 랜덤 포레스트 모델 학습 후 SHAP 값 계산
+explainer = shap.TreeExplainer(rf)
+shap_values = explainer.shap_values(X)
+
+# SHAP 값 시각화
+shap.summary_plot(shap_values, X)
+
+
+
+
+# UMAP visualization
+
+import umap
+import numpy as np
+import pandas as pd
+
+# 예시 데이터 (원본 데이터)
+data = np.random.rand(100, 10)  # 100개의 샘플, 10개의 특징
+
+# UMAP 모델 학습 (원본 데이터에 대해)
+umap_model = umap.UMAP(n_components=2)
+umap_model.fit(data)
+
+# 새로운 데이터 (다른 데이터에 대해 동일한 매핑을 적용)
+new_data = np.random.rand(50, 10)  # 50개의 샘플, 10개의 특징
+
+# 학습된 UMAP 모델을 사용하여 새로운 데이터 변환 (차원 축소 적용)
+new_data_embedding = umap_model.transform(new_data)
+
+# 결과 확인
+print(new_data_embedding.shape)  # (50, 2)
 

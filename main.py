@@ -1,5 +1,6 @@
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
 
 
 # read data
@@ -18,18 +19,25 @@ df_l.dropna(inplace=True)
 
 # Normalization (Except Age, Age group, Gender)
 columns_to_exclude = ['Age', 'AGEGROUP', 'GENDER']
-columns_to_normalize = df_r.columns.difference(columns_to_exclude)
+columns_to_cal = df_r.columns.difference(columns_to_exclude)
 
 scaler =  StandardScaler()
-df_r[columns_to_normalize] = scaler.fit_transform(df_r[columns_to_normalize])
+df_r[columns_to_cal] = scaler.fit_transform(df_r[columns_to_cal])
 scaler =  StandardScaler()
-df_l[columns_to_normalize] = scaler.fit_transform(df_l[columns_to_normalize])
+df_l[columns_to_cal] = scaler.fit_transform(df_l[columns_to_cal])
 
 # PCA
+pca = PCA(n_components=10)
+printcipalComponents = pca.fit_transform(df_r[columns_to_cal])
+principalDf = pd.DataFrame(data=printcipalComponents)
 
+principalDf.head()
+pca.explained_variance_ratio_.sum()
 
 
 # visualization
 
 
+
+# UMAP
 
