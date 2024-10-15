@@ -265,10 +265,58 @@ import shap
 explainer = shap.TreeExplainer(rf)
 shap_values = explainer.shap_values(x)
 
+x.shape
+shap_values.shape
+shap_values[:, :, 0].shape
+
 # SHAP 값 시각화
-shap.summary_plot(shap_values, x, plot_type='bar')
-shap.summary_plot(shap_values, x)
-shap.force_plot(shap_values, x)
+plt.figure()
+plt.suptitle("Top 10 features for age group 20", fontsize=16, fontweight='bold')
+shap.summary_plot(shap_values[:, :, 0], x, max_display=10)
+plt.tight_layout()
+plt.figure()
+plt.suptitle("Top 10 features for age group 30", fontsize=16, fontweight='bold')
+shap.summary_plot(shap_values[:, :, 1], x, max_display=10)
+plt.tight_layout()
+plt.figure()
+plt.suptitle("Top 10 features for age group 40", fontsize=16, fontweight='bold')
+shap.summary_plot(shap_values[:, :, 2], x, max_display=10)
+plt.tight_layout()
+plt.figure()
+plt.suptitle("Top 10 features for age group 50", fontsize=16, fontweight='bold')
+shap.summary_plot(shap_values[:, :, 3], x, max_display=10)
+plt.tight_layout()
+plt.figure()
+plt.suptitle("Top 10 features for age group 60", fontsize=16, fontweight='bold')
+shap.summary_plot(shap_values[:, :, 4], x, max_display=10)
+plt.tight_layout()
+
+
+import numpy as np
+
+shap_values_abs_mean = np.mean(np.abs(shap_values[:, :, 0]), axis=0)
+top_10_indices = np.argsort(shap_values_abs_mean)[-10:]
+top_10_features = x.columns[top_10_indices]
+
+
+feature_union = set()
+for i in range(shap_values.shape[2]):
+    shap_values_abs_mean = np.mean(np.abs(shap_values[:, :, i]), axis=0)
+    top_10_indices = np.argsort(shap_values_abs_mean)[-10:]
+    top_10_features = set(x.columns[top_10_indices])
+    feature_union = feature_union.union(top_10_features)
+
+len(feature_union)
+
+plt.figure()
+plt.title("Top 10 features for age group 20")
+shap.summary_plot(shap_values[:, :, 0], x, max_display=10)
+plt.figure()
+shap.summary_plot(shap_values[:, :, 1], x, max_display=10)
+shap.summary_plot(shap_values[:, :, 2], x, max_display=10)
+shap.summary_plot(shap_values[:, :, 3], x, max_display=10)
+shap.summary_plot(shap_values[:, :, 4], x, max_display=10)
+
 
 
 
@@ -278,8 +326,7 @@ import umap
 import numpy as np
 import pandas as pd
 
-# 예시 데이터 (원본 데이터)
-data = np.random.rand(100, 10)  # 100개의 샘플, 10개의 특징
+data = x[list(feature_union)]
 
 # UMAP 모델 학습 (원본 데이터에 대해)
 umap_model = umap.UMAP(n_components=2)
@@ -293,3 +340,21 @@ new_data_embedding = umap_model.transform(new_data)
 
 # 결과 확인
 print(new_data_embedding.shape)  # (50, 2)
+
+
+data = x[list(feature_union)]
+umap_model = umap.UMAP(n_components=3)
+umap_embedding = umap_model.fit_transform(data)
+
+# UMAP 결과 시각화
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+scatter = ax.scatter(umap_embedding[:, 0], umap_embedding[:, 1], umap_embedding[:, 2], c=y, cmap='coolwarm', s=10, alpha=0.7)
+ax.set_xlabel('UMAP 1')
+ax.set_ylabel('UMAP 2')
+ax.set_zlabel('UMAP 3')
+
+cbar = fig.colorbar(scatter, ax=ax, shrink=0.5, aspect=10)
+cbar.set_label('Age Group')
+
+plt.tight_layout()
