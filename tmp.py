@@ -173,6 +173,33 @@ pca.explained_variance_ratio_
 
 # visualizaation
 
+import matplotlib.pyplot as plt
+
+# 그냥 3d interaction 됨!
+
+plt.ion()
+
+
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+
+for age_group in df_r["AGEGROUP"].value_counts().index:
+    ax.scatter(principalDf[0][df_r["AGEGROUP"] == age_group], principalDf[1][df_r["AGEGROUP"] == age_group], principalDf[2][df_r["AGEGROUP"] == age_group], marker='o', label=age_group)
+
+plt.legend()
+
+ax.set_xlabel('PC1')
+ax.set_ylabel('PC2')
+ax.set_zlabel('PC3')
+
+ax.view_init(elev=30, azim=60)
+
+plt.show()
+
+
+df_r["AGEGROUP"].value_counts()
+df_r["AGEGROUP"].value_counts().index
+
 
 # Random Forest
 
@@ -214,15 +241,34 @@ feature_importances = pd.Series(rf.feature_importances_, index=X.columns).sort_v
 print(feature_importances)
 
 
+from sklearn.ensemble import RandomForestClassifier
+
+x = df_r[columns_to_cal]
+y = df_r['AGEGROUP']
+
+rf = RandomForestClassifier()
+rf.fit(x, y)
+
+feature_importances = pd.Series(rf.feature_importances_, index=x.columns).sort_values(ascending=False)
+print(feature_importances)
+
+
+from sklearn.metrics import accuracy_score
+
+y_pred = rf.predict(x)
+accuracy = accuracy_score(y, y_pred)
+
+
 import shap
 
 # 랜덤 포레스트 모델 학습 후 SHAP 값 계산
 explainer = shap.TreeExplainer(rf)
-shap_values = explainer.shap_values(X)
+shap_values = explainer.shap_values(x)
 
 # SHAP 값 시각화
-shap.summary_plot(shap_values, X)
-
+shap.summary_plot(shap_values, x, plot_type='bar')
+shap.summary_plot(shap_values, x)
+shap.force_plot(shap_values, x)
 
 
 
@@ -247,4 +293,3 @@ new_data_embedding = umap_model.transform(new_data)
 
 # 결과 확인
 print(new_data_embedding.shape)  # (50, 2)
-
